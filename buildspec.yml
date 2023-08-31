@@ -11,12 +11,24 @@ phases:
 
   pre_build:
     commands:
-      - echo Installing source NPM dependiencies ...
-      - yarn config set cache-folder /root/.yarn-cache
-      - yarn install --frozen-lockfile
-      - ...other build commands go here
-      - yarn build 
-      - ls -la
+      - npm install -g yarn
+      - git config --global credential.helper '!aws codecommit credential-helper $@'
+      - git config --global credential.UseHttpPath true
+      - yarn
+  pre_build:
+    commands:
+      - git rev-parse HEAD
+      - git pull origin master
+  build:
+    commands:
+      - yarn run build
+      - yarn run deploy
+  post_build:
+    commands:
+      - echo 'Finished.'
+cache:
+  paths:
+    - 'node_modules/**/*'
   post_build:
     commands:
       - echo Deployment completed on `date`
