@@ -1,0 +1,57 @@
+pipeline {
+    agent any
+    
+    environment {
+        // Define any environment variables here
+        MAVEN_HOME = tool name: 'M3', type: 'maven'
+    }
+    
+    stages {
+        stage('Checkout') {
+            steps {
+                // Checkout the code from version control
+                git url: 'https://github.com/your-repo/your-project.git', branch: 'main'
+            }
+        }
+        
+        stage('Build') {
+            steps {
+                // Build the project using Maven
+                sh "${MAVEN_HOME}/bin/mvn clean install"
+            }
+        }
+        
+        stage('Test') {
+            steps {
+                // Run the tests using Maven
+                sh "${MAVEN_HOME}/bin/mvn test"
+            }
+        }
+        
+        stage('Deploy') {
+            when {
+                branch 'main'
+            }
+            steps {
+                // Deploy the application
+                echo 'Deploying the application...'
+                // Add your deployment steps here
+            }
+        }
+    }
+    
+    post {
+        always {
+            // Archive the build artifacts
+            archiveArtifacts artifacts: '/target/*.jar', allowEmptyArchive: true
+            // Publish test results
+            junit '/target/surefire-reports/*.xml'
+        }
+        success {
+            echo 'Pipeline completed successfully!'
+        }
+        failure {
+            echo 'Pipeline failed!'
+        }
+    }
+}
